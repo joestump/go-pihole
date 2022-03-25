@@ -1,0 +1,104 @@
+---
+openapi: 3.0.0
+info:
+  title: Pi-Hole API
+  version: 5.9
+
+servers:
+  - url: http://{pihost}/admin/api.php
+    variables:
+      pihost:
+        default: 192.168.1.20
+        description: Pi-Hole IP address
+
+paths:
+  ?status:
+    get:
+      operationId: getStatus
+      responses:
+        '200':
+          description: Pi-Hole Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  ?enable:
+    get:
+      security:
+        - PiHoleAPIToken: []
+      operationId: enableServer
+      responses:
+        '200':
+          description: Enable Pi-Hole Server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+
+  ?disable:
+    get:
+      security:
+        - PiHoleAPIToken: []
+      operationId: disableServer
+      responses:
+        '200':
+          description: Disable Pi-Hole Server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+
+  ?versions:
+    get:
+      operationId: getVersions
+      responses:
+        '200':
+          description: Pi-Hole Core, Web, and FTL Version Information and Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Versions'
+
+components:
+  securitySchemes:
+    PiHoleAPIToken:
+      type: apiKey
+      in: query
+      name: auth
+
+  schemas:
+    Status:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - disabled
+            - enabled
+    Versions:
+      type: object
+      properties:
+        core_update: 
+          type: boolean
+        web_update: 
+          type: boolean
+        FTL_update: 
+          type: boolean
+        core_current:
+          type: string
+        web_current:
+          type: string
+        FTL_current:
+          type: string
+        core_latest:
+          type: string
+        web_latest:
+          type: string
+        FTL_latest:
+          type: string
+        core_branch:
+          type: string
+        web_branch:
+          type: string
+        FTL_branch:
+          type: string
