@@ -22,6 +22,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
+  ?enable:
+    get:
+      security:
+        - PiHoleAPIToken: []
+      operationId: enableServer
+      responses:
+        '200':
+          description: Enable Pi-Hole Server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+
+  ?disable:
+    get:
+      security:
+        - PiHoleAPIToken: []
+      operationId: disableServer
+      responses:
+        '200':
+          description: Disable Pi-Hole Server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+
   ?versions:
     get:
       operationId: getVersions
