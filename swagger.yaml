@@ -12,48 +12,185 @@ servers:
         description: Pi-Hole IP address
 
 paths:
-  ?status:
+  ?customcname&action=get:
     get:
-      operationId: getStatus
+      tags:
+        - dns
+      summary: List custom DNS CNAME records
+      security:
+        - PiHoleAPIToken: []
+      operationId: getCustomCNAMERecords
       responses:
         '200':
-          description: Pi-Hole Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+  ?customcname&action=add:
+    post:
+      tags:
+        - dns
+      summary: Create a custom DNS CNAME record
+      security:
+        - PiHoleAPIToken: []
+      operationId: addCustomCNAMERecord
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+                $ref: '#/components/schemas/CustomCNAMERecord'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDNSResponse'
+  ?customcname&action=delete:
+    post:
+      tags:
+        - dns
+      summary: Delete a custom DNS CNAME record
+      security:
+        - PiHoleAPIToken: []
+      operationId: deleteCustomCNAMERecord
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+                $ref: '#/components/schemas/CustomCNAMERecord'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDNSResponse'
+
+  ?customdns&action=get:
+    get:
+      tags:
+        - dns
+      summary: List custom DNS A records
+      security:
+        - PiHoleAPIToken: []
+      operationId: getCustomDNSRecords
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+  ?customdns&action=add:
+    post:
+      tags:
+        - dns
+      summary: Create a custom DNS A record
+      security:
+        - PiHoleAPIToken: []
+      operationId: addCustomDNSRecord
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+                $ref: '#/components/schemas/CustomDNSRecord'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDNSResponse'
+  ?customdns&action=delete:
+    post:
+      tags:
+        - dns
+      summary: Delete a custom DNS A record
+      security:
+        - PiHoleAPIToken: []
+      operationId: deleteCustomDNSRecord
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+                $ref: '#/components/schemas/CustomDNSRecord'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDNSResponse'
+  ?disable:
+    get:
+      tags:
+        - status
+      summary: Disable Pi-Hole server
+      security:
+        - PiHoleAPIToken: []
+      operationId: disableServer
+      responses:
+        '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
   ?enable:
     get:
+      tags:
+        - status
+      summary: Enable Pi-Hole server
       security:
         - PiHoleAPIToken: []
       operationId: enableServer
       responses:
         '200':
-          description: Enable Pi-Hole Server
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-
-  ?disable:
+  ?list={type}:
     get:
+      tags:
+        - blacklist
+        - whitelist
+      summary: List blacklisted and whitelisted entries
       security:
         - PiHoleAPIToken: []
-      operationId: disableServer
+      operationId: listEntries
+      parameters:
+        - in: path
+          name: type
+          schema:
+            type: string
+            enum:
+              - black
+              - regex_black
+              - white
+              - regex_white
       responses:
         '200':
-          description: Disable Pi-Hole Server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+
+  ?status:
+    get:
+      summary: Get Pi-Hole server status
+      tags:
+        - status
+      operationId: getStatus
+      responses:
+        '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-
   ?versions:
     get:
+      summary: Get versions of Pi-Hole, FTL, etc.
+      tags:
+        - status
       operationId: getVersions
       responses:
         '200':
-          description: Pi-Hole Core, Web, and FTL Version Information and Status
           content:
             application/json:
               schema:
@@ -65,8 +202,43 @@ components:
       type: apiKey
       in: query
       name: auth
-
   schemas:
+    CustomCNAMERecord:
+      type: object
+      properties:
+        target:
+          type: string
+          required: true
+          description: Target domain of CNAME record.
+        domain:
+          type: string
+          required: true
+          description: DNS name of CNAME record.
+    CustomDNSRecord:
+      type: object
+      properties:
+        ip:
+          type: string
+          required: true
+          description: IP address of A record.
+        domain:
+          type: string
+          required: true
+          description: DNS name of A record.
+    CustomDNSResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+    Data:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
     Status:
       type: object
       properties:
