@@ -1,0 +1,75 @@
+---
+openapi: 3.0.0
+info:
+  title: Pi-Hole API
+  version: 5.9
+
+servers:
+  - url: http://192.168.1.20/admin/api.php
+    description: Local test Pi-Hole
+
+paths:
+  ?status:
+    get:
+      operationId: getStatus
+      responses:
+        '200':
+          description: Pi-Hole Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  ?versions:
+    get:
+      operationId: getVersions
+      responses:
+        '200':
+          description: Pi-Hole Core, Web, and FTL Version Information and Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Versions'
+
+components:
+  securitySchemes:
+    PiHoleAPIToken:
+      type: apiKey
+      in: query
+      name: auth
+
+  schemas:
+    Status:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - disabled
+            - enabled
+    Versions:
+      type: object
+      properties:
+        core_update: 
+          type: boolean
+        web_update: 
+          type: boolean
+        FTL_update: 
+          type: boolean
+        core_current:
+          type: string
+        web_current:
+          type: string
+        FTL_current:
+          type: string
+        core_latest:
+          type: string
+        web_latest:
+          type: string
+        FTL_latest:
+          type: string
+        core_branch:
+          type: string
+        web_branch:
+          type: string
+        FTL_branch:
+          type: string
