@@ -18,4 +18,8 @@ $ npm install -g http-server
 $ http-server --cors
 ```
 
-Use `http://localhost:8080/swagger.yaml` and click "Explore".
+### Load `swagger.yaml` in Swagger-UI
+
+ 1. Navigate to `http://localhost/`
+ 1. Paste `http://localhost:8080/swagger.yaml` into the input field at the top of the page.
+ 2. Click "Explore".
