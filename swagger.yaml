@@ -16,7 +16,10 @@ paths:
     get:
       tags:
         - dns
-      summary: List custom DNS CNAME records
+      summary: List local DNS CNAME records
+      description: |
+        Pi-Hole supports creating custom local DNS A and CNAME records. This endpoint lists
+        all custom CNAME records.
       security:
         - PiHoleAPIToken: []
       operationId: getCustomCNAMERecords
@@ -26,15 +29,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Data'
-  ?customcname&action=add:
+  ?customcname&action={action}:
     post:
       tags:
         - dns
-      summary: Create a custom DNS CNAME record
+      summary: Manage a local DNS CNAME record
+      description: |
+        Pi-Hole supports creating custom local DNS A and CNAME records. This endpoint allows
+        you to add and delete CNAME records.
       security:
         - PiHoleAPIToken: []
-      operationId: addCustomCNAMERecord
+      operationId: manageCustomCNAMERecord
+      parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+            enum:
+              - add
+              - delete
       requestBody:
+        required: true
         content:
           multipart/form-data:
             schema:
@@ -45,31 +61,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomDNSResponse'
-  ?customcname&action=delete:
-    post:
-      tags:
-        - dns
-      summary: Delete a custom DNS CNAME record
-      security:
-        - PiHoleAPIToken: []
-      operationId: deleteCustomCNAMERecord
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-                $ref: '#/components/schemas/CustomCNAMERecord'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomDNSResponse'
-
   ?customdns&action=get:
     get:
       tags:
         - dns
       summary: List custom DNS A records
+      description: |
+        Pi-Hole supports creating custom local DNS A and CNAME records. This endpoint lists
+        DNS A records. These records will point at IP addresses (e.g. `192.168.1.33`).
       security:
         - PiHoleAPIToken: []
       operationId: getCustomDNSRecords
@@ -79,34 +78,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Data'
-  ?customdns&action=add:
+  ?customdns&action={action}:
     post:
       tags:
         - dns
-      summary: Create a custom DNS A record
+      summary: Manage a custom DNS A record
+      description: |
+        Pi-Hole supports creating custom local DNS A and CNAME records. This endpoint can
+        add or delete DNS A records.
       security:
         - PiHoleAPIToken: []
-      operationId: addCustomDNSRecord
+      operationId: manageCustomDNSRecord
+      parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+            enum:
+              - add
+              - delete
       requestBody:
-        content:
-          multipart/form-data:
-            schema:
-                $ref: '#/components/schemas/CustomDNSRecord'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomDNSResponse'
-  ?customdns&action=delete:
-    post:
-      tags:
-        - dns
-      summary: Delete a custom DNS A record
-      security:
-        - PiHoleAPIToken: []
-      operationId: deleteCustomDNSRecord
-      requestBody:
+        required: true
         content:
           multipart/form-data:
             schema:
@@ -145,6 +138,101 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
+  ?getMaxlogage:
+    get:
+      tags:
+        - ftl
+      summary: Get max log age
+      security:
+        - PiHoleAPIToken: []
+      operationId: getMaxLogAge
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaxLogAge'
+  ?overTimeData10mins:
+    get:
+      tags:
+        - ftl
+      summary: Get overTimeData10mins
+      operationId: getOverTimeData10mins
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+  ?topClients={count}:
+    get:
+      tags:
+        - ftl
+      summary: Get top clients by query count
+      security:
+        - PiHoleAPIToken: []
+      operationId: getTopClients
+      parameters:
+        - in: path
+          name: count
+          description: |
+            How many client rows to return
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopClients'
+  ?topClientsBlocked={count}:
+    get:
+      tags:
+        - ftl
+      summary: Get top clients by number of blocked queries
+      description: |
+        This returns a report that shows which clients have had the most DNS queries blocked
+        by Pi-Hole.
+      security:
+        - PiHoleAPIToken: []
+      operationId: getTopClientsBlocked
+      parameters:
+        - in: path
+          name: count
+          description: |
+            How many client rows to return
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopClientsBlocked'
+  ?topItems={type}:
+    get:
+      tags:
+        - ftl
+      summary: Get top items
+      security:
+        - PiHoleAPIToken: []
+      operationId: getTopItems
+      parameters:
+        - in: path
+          name: type
+          description: |
+            Default is to leave this parameter empty. Pass in `audit` _or_ a number to get
+            different results.
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
   ?list={type}:
     get:
       tags:
@@ -157,6 +245,7 @@ paths:
       parameters:
         - in: path
           name: type
+          required: true
           schema:
             type: string
             enum:
@@ -164,6 +253,46 @@ paths:
               - regex_black
               - white
               - regex_white
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+
+  ?list={type}&{operation}={domain}:
+    get:
+      tags:
+        - blacklist
+        - whitelist
+      summary: Manage blacklist and whitelist entries
+      security:
+        - PiHoleAPIToken: []
+      operationId: manageDomainList
+      parameters:
+        - in: path
+          name: type
+          required: true
+          schema:
+            type: string
+            enum:
+              - black
+              - regex_black
+              - white
+              - regex_white
+        - in: path
+          name: operation
+          required: true
+          schema:
+            type: string
+            enum:
+              - add
+              - sub
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           content:
@@ -205,25 +334,35 @@ components:
   schemas:
     CustomCNAMERecord:
       type: object
+      required: 
+        - target
+        - domain
       properties:
         target:
           type: string
           required: true
+          format: hostname
           description: Target domain of CNAME record.
         domain:
           type: string
           required: true
+          format: hostname
           description: DNS name of CNAME record.
     CustomDNSRecord:
       type: object
+      required: 
+        - ip
+        - domain
       properties:
         ip:
           type: string
           required: true
+          format: ipv4
           description: IP address of A record.
         domain:
           type: string
           required: true
+          format: hostname
           description: DNS name of A record.
     CustomDNSResponse:
       type: object
@@ -239,6 +378,21 @@ components:
           type: array
           items:
             type: object
+    MaxLogAge:
+      type: object
+      properties:
+        maxlogage:
+          type: integer
+    TopClients:
+      type: object
+      properties:
+        top_sources:
+          type: object
+    TopClientsBlocked:
+      type: object
+      properties:
+        top_sources_blocked:
+          type: object
     Status:
       type: object
       properties:
