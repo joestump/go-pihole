@@ -1,8 +1,9 @@
 ---
 openapi: 3.0.0
+
 info:
   title: Pi-Hole API
-  version: 5.9
+  version: "5.9"
 
 servers:
   - url: http://{pihost}/admin/api.php
@@ -340,12 +341,10 @@ components:
       properties:
         target:
           type: string
-          required: true
           format: hostname
           description: Target domain of CNAME record.
         domain:
           type: string
-          required: true
           format: hostname
           description: DNS name of CNAME record.
     CustomDNSRecord:
@@ -356,12 +355,10 @@ components:
       properties:
         ip:
           type: string
-          required: true
           format: ipv4
           description: IP address of A record.
         domain:
           type: string
-          required: true
           format: hostname
           description: DNS name of A record.
     CustomDNSResponse:
