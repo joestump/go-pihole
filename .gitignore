@@ -16,3 +16,4 @@ vendor/
 
 # Text editors/IDEs
 *.swp
+pihole-api
