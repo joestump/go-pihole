@@ -1,11 +1,19 @@
 package pihole
 
 import (
-	"net/http"
-	"net/url"
+	"github.com/deepmap/oapi-codegen/pkg/securityprovider"
 )
 
-type Client struct {
-	client  *http.Client
-	BaseURL *url.URL
+func CreateClient(server string, apiKey string) (*ClientWithResponses, error) {
+	apiKeyProvider, err := securityprovider.NewSecurityProviderApiKey("query", "auth", apiKey)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := NewClientWithResponses(server, WithRequestEditorFn(apiKeyProvider.Intercept))
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }

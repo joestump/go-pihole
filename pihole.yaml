@@ -1,0 +1,427 @@
+---
+openapi: 3.0.0
+
+info:
+  title: Pi-Hole API
+  version: "5.9"
+
+servers:
+  - url: http://{pihost}/admin/api.php
+    variables:
+      pihost:
+        default: 192.168.1.20
+        description: Pi-Hole IP address
+
+paths:
+  ?customcname&action=get:
+    get:
+      tags:
+        - dns
+      summary: List local DNS CNAME records
+      description: |
+        Pi-Hole supports creating custom local DNS A and CNAME records. This endpoint lists
+        all custom CNAME records.
+      security:
+        - PiHoleAPIToken: []
+      operationId: getCustomCNAMERecords
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+  ?customcname&action={action}:
+    post:
+      tags:
+        - dns
+      summary: Manage a local DNS CNAME record
+      description: |
+        Pi-Hole supports creating custom local DNS A and CNAME records. This endpoint allows
+        you to add and delete CNAME records.
+      security:
+        - PiHoleAPIToken: []
+      operationId: manageCustomCNAMERecord
+      parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+            enum:
+              - add
+              - delete
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+                $ref: '#/components/schemas/CustomCNAMERecord'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDNSResponse'
+  ?customdns&action=get:
+    get:
+      tags:
+        - dns
+      summary: List custom DNS A records
+      description: |
+        Pi-Hole supports creating custom local DNS A and CNAME records. This endpoint lists
+        DNS A records. These records will point at IP addresses (e.g. `192.168.1.33`).
+      security:
+        - PiHoleAPIToken: []
+      operationId: getCustomDNSRecords
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+  ?customdns&action={action}:
+    post:
+      tags:
+        - dns
+      summary: Manage a custom DNS A record
+      description: |
+        Pi-Hole supports creating custom local DNS A and CNAME records. This endpoint can
+        add or delete DNS A records.
+      security:
+        - PiHoleAPIToken: []
+      operationId: manageCustomDNSRecord
+      parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+            enum:
+              - add
+              - delete
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+                $ref: '#/components/schemas/CustomDNSRecord'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDNSResponse'
+  ?disable:
+    get:
+      tags:
+        - status
+      summary: Disable Pi-Hole server
+      security:
+        - PiHoleAPIToken: []
+      operationId: disableServer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  ?enable:
+    get:
+      tags:
+        - status
+      summary: Enable Pi-Hole server
+      security:
+        - PiHoleAPIToken: []
+      operationId: enableServer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  ?getMaxlogage:
+    get:
+      tags:
+        - ftl
+      summary: Get max log age
+      security:
+        - PiHoleAPIToken: []
+      operationId: getMaxLogAge
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaxLogAge'
+  ?overTimeData10mins:
+    get:
+      tags:
+        - ftl
+      summary: Get overTimeData10mins
+      operationId: getOverTimeData10mins
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+  ?topClients={count}:
+    get:
+      tags:
+        - ftl
+      summary: Get top clients by query count
+      security:
+        - PiHoleAPIToken: []
+      operationId: getTopClients
+      parameters:
+        - in: path
+          name: count
+          description: |
+            How many client rows to return
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopClients'
+  ?topClientsBlocked={count}:
+    get:
+      tags:
+        - ftl
+      summary: Get top clients by number of blocked queries
+      description: |
+        This returns a report that shows which clients have had the most DNS queries blocked
+        by Pi-Hole.
+      security:
+        - PiHoleAPIToken: []
+      operationId: getTopClientsBlocked
+      parameters:
+        - in: path
+          name: count
+          description: |
+            How many client rows to return
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopClientsBlocked'
+  ?topItems={type}:
+    get:
+      tags:
+        - ftl
+      summary: Get top items
+      security:
+        - PiHoleAPIToken: []
+      operationId: getTopItems
+      parameters:
+        - in: path
+          name: type
+          description: |
+            Default is to leave this parameter empty. Pass in `audit` _or_ a number to get
+            different results.
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+  ?list={type}:
+    get:
+      tags:
+        - blacklist
+        - whitelist
+      summary: List blacklisted and whitelisted entries
+      security:
+        - PiHoleAPIToken: []
+      operationId: listEntries
+      parameters:
+        - in: path
+          name: type
+          required: true
+          schema:
+            type: string
+            enum:
+              - black
+              - regex_black
+              - white
+              - regex_white
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+
+  ?list={type}&{operation}={domain}:
+    get:
+      tags:
+        - blacklist
+        - whitelist
+      summary: Manage blacklist and whitelist entries
+      security:
+        - PiHoleAPIToken: []
+      operationId: manageDomainList
+      parameters:
+        - in: path
+          name: type
+          required: true
+          schema:
+            type: string
+            enum:
+              - black
+              - regex_black
+              - white
+              - regex_white
+        - in: path
+          name: operation
+          required: true
+          schema:
+            type: string
+            enum:
+              - add
+              - sub
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data'
+
+  ?status:
+    get:
+      summary: Get Pi-Hole server status
+      tags:
+        - status
+      operationId: getStatus
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  ?versions:
+    get:
+      summary: Get versions of Pi-Hole, FTL, etc.
+      tags:
+        - status
+      operationId: getVersions
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Versions'
+
+components:
+  securitySchemes:
+    PiHoleAPIToken:
+      type: apiKey
+      in: query
+      name: auth
+  schemas:
+    CustomCNAMERecord:
+      type: object
+      required: 
+        - target
+        - domain
+      properties:
+        target:
+          type: string
+          format: hostname
+          description: Target domain of CNAME record.
+        domain:
+          type: string
+          format: hostname
+          description: DNS name of CNAME record.
+    CustomDNSRecord:
+      type: object
+      required: 
+        - ip
+        - domain
+      properties:
+        ip:
+          type: string
+          format: ipv4
+          description: IP address of A record.
+        domain:
+          type: string
+          format: hostname
+          description: DNS name of A record.
+    CustomDNSResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+    Data:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+    MaxLogAge:
+      type: object
+      properties:
+        maxlogage:
+          type: integer
+    TopClients:
+      type: object
+      properties:
+        top_sources:
+          type: object
+    TopClientsBlocked:
+      type: object
+      properties:
+        top_sources_blocked:
+          type: object
+    Status:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - disabled
+            - enabled
+    Versions:
+      type: object
+      properties:
+        core_update: 
+          type: boolean
+        web_update: 
+          type: boolean
+        FTL_update: 
+          type: boolean
+        core_current:
+          type: string
+        web_current:
+          type: string
+        FTL_current:
+          type: string
+        core_latest:
+          type: string
+        web_latest:
+          type: string
+        FTL_latest:
+          type: string
+        core_branch:
+          type: string
+        web_branch:
+          type: string
+        FTL_branch:
+          type: string
